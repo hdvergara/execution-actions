@@ -9,22 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up OpenVPN
-      run: |
-        # Descargar el archivo .ovpn en base64
-        curl -s https://github.com/hdvergara/execution-actions/actions/secrets/vpn_config \
-          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          > vpn_config.txt.b64
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-        # Decodificar el archivo
-        base64 -d vpn_config.txt.b64 > vpn_config.ovpn
+      - name: Setup OpenVPN with credentials
+        run: |
+          echo "${{ secrets.VPN_CONFIG_BASE64 }}" | base64 --decode > vpn_config.ovpn
+          echo -e "${{ secrets.VPN_USERNAME }}\n${{ secrets.VPN_PASSWORD }}" > vpn_auth.txt
+          sudo apt-get update
+          sudo apt-get install -y openvpn
+          sudo openvpn --config vpn_config.ovpn --auth-user-pass vpn_auth.txt --daemon
 
-        # Iniciar OpenVPN (ajusta la contraseña)
-        sudo openvpn --config vpn_config.ovpn --auth-user-pass /dev/stdin << EOF
-        ${{ secrets.VPN_PASSWORD }}
-        EOF
-    - name: Install dependencies
-      run: npm install
-    - name: Run Playwright tests
-      run: npx playwright test
+      - name: Run tests
+        run: |
+          npx playwright test
