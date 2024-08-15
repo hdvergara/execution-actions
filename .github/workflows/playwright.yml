@@ -18,7 +18,7 @@ jobs:
           echo -e "${{ secrets.VPN_USERNAME }}\n${{ secrets.VPN_PASSWORD }}" > vpn_auth.txt
           sudo apt-get update
           sudo apt-get install -y openvpn
-          sudo openvpn --config vpn_config.ovpn --auth-user-pass vpn_auth.txt --daemon
+          sudo openvpn --config vpn_config.ovpn --auth-user-pass vpn_auth.txt --verb 4 --daemon
 
       - name: Run tests
         run: |
